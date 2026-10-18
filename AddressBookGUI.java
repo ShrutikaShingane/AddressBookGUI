@@ -1,24 +1,20 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 public class AddressBookGUI extends JFrame {
 
     // Store contacts in an ArrayList
-    private ArrayList<Contact> contactList = new ArrayList<>();
+    private final ArrayList<Contact> contactList = new ArrayList<>();
 
     // JTable and DefaultTableModel
-    private JTable table;
-    private DefaultTableModel tableModel;
+    private final JTable table;
+    private final DefaultTableModel tableModel;
 
     public AddressBookGUI() {
         setTitle("Address Book");
-        setSize(650, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
         // Initialize table
@@ -44,52 +40,44 @@ public class AddressBookGUI extends JFrame {
         buttonPanel.add(btnDelete);
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // Add Button Action
-        btnAdd.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showContactDialog(null, -1);
+        // Lambda Expressions for ActionListeners
+        btnAdd.addActionListener(e -> showContactDialog(null, -1));
+
+        btnEdit.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this, 
+                    "Please select a contact to edit.", "Warning", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            Contact selectedContact = contactList.get(selectedRow);
+            showContactDialog(selectedContact, selectedRow);
+        });
+
+        btnDelete.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this, 
+                    "Please select a contact to delete.", "Warning", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int confirm = JOptionPane.showConfirmDialog(this, 
+                    "Are you sure you want to delete this contact?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                contactList.remove(selectedRow);
+                tableModel.removeRow(selectedRow);
             }
         });
 
-        // Edit Button Action
-        btnEdit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int selectedRow = table.getSelectedRow();
-                if (selectedRow == -1) {
-                    JOptionPane.showMessageDialog(AddressBookGUI.this, 
-                        "Please select a contact to edit.", "Warning", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-                Contact selectedContact = contactList.get(selectedRow);
-                showContactDialog(selectedContact, selectedRow);
-            }
-        });
-
-        // Delete Button Action
-        btnDelete.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int selectedRow = table.getSelectedRow();
-                if (selectedRow == -1) {
-                    JOptionPane.showMessageDialog(AddressBookGUI.this, 
-                        "Please select a contact to delete.", "Warning", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-
-                int confirm = JOptionPane.showConfirmDialog(AddressBookGUI.this, 
-                        "Are you sure you want to delete this contact?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
-
-                if (confirm == JOptionPane.YES_OPTION) {
-                    contactList.remove(selectedRow);
-                    tableModel.removeRow(selectedRow);
-                }
-            }
-        });
+        // Set minimum dimensions and pack for clean DPI scaling
+        setMinimumSize(new Dimension(650, 400));
+        pack();
+        setLocationRelativeTo(null);
     }
 
-    // Contact Dialog Method
+    // Contact Dialog with Regex Validation
     private void showContactDialog(Contact contact, int rowIndex) {
         boolean isEdit = (contact != null);
 
@@ -115,7 +103,19 @@ public class AddressBookGUI extends JFrame {
             String email = txtEmail.getText().trim();
 
             if (name.isEmpty() || phone.isEmpty() || email.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "All fields are required!", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "All fields must be filled.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Phone validation (10 digits)
+            if (!phone.matches("\\d{10}")) {
+                JOptionPane.showMessageDialog(this, "Phone must be a valid 10-digit number.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Email validation (standard regex)
+            if (!email.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
+                JOptionPane.showMessageDialog(this, "Please enter a valid email address.", "Validation Error", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
@@ -135,13 +135,8 @@ public class AddressBookGUI extends JFrame {
         }
     }
 
-    // Main Method with SwingUtilities.invokeLater
+    // Main Method with EDT invokeLater
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new AddressBookGUI().setVisible(true);
-            }
-        });
+        SwingUtilities.invokeLater(() -> new AddressBookGUI().setVisible(true));
     }
 }
