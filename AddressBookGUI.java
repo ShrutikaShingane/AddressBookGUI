@@ -7,10 +7,10 @@ import java.util.ArrayList;
 
 public class AddressBookGUI extends JFrame {
 
-    // Step 4: ArrayList to store contacts
+    // Store contacts in an ArrayList
     private ArrayList<Contact> contactList = new ArrayList<>();
 
-    // Step 1: JTable and Model
+    // JTable and DefaultTableModel
     private JTable table;
     private DefaultTableModel tableModel;
 
@@ -21,19 +21,19 @@ public class AddressBookGUI extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Table setup
+        // Initialize table
         String[] columnNames = {"Name", "Phone", "Email"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Table cells are read-only directly
+                return false;
             }
         };
         table = new JTable(tableModel);
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
 
-        // Buttons Panel setup
+        // Buttons Panel
         JPanel buttonPanel = new JPanel(new FlowLayout());
         JButton btnAdd = new JButton("Add Contact");
         JButton btnEdit = new JButton("Edit Contact");
@@ -44,7 +44,7 @@ public class AddressBookGUI extends JFrame {
         buttonPanel.add(btnDelete);
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // --- Step 2: Add Dialog ---
+        // Add Button Action
         btnAdd.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -52,7 +52,7 @@ public class AddressBookGUI extends JFrame {
             }
         });
 
-        // --- Step 2: Edit Dialog ---
+        // Edit Button Action
         btnEdit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -67,7 +67,7 @@ public class AddressBookGUI extends JFrame {
             }
         });
 
-        // --- Step 3 & 4: Delete Button (removes from model and ArrayList) ---
+        // Delete Button Action
         btnDelete.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -82,14 +82,14 @@ public class AddressBookGUI extends JFrame {
                         "Are you sure you want to delete this contact?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
 
                 if (confirm == JOptionPane.YES_OPTION) {
-                    contactList.remove(selectedRow);      // Sync ArrayList
-                    tableModel.removeRow(selectedRow);    // Remove from table view
+                    contactList.remove(selectedRow);
+                    tableModel.removeRow(selectedRow);
                 }
             }
         });
     }
 
-    // Dialog for Adding or Editing contacts
+    // Contact Dialog Method
     private void showContactDialog(Contact contact, int rowIndex) {
         boolean isEdit = (contact != null);
 
@@ -120,7 +120,6 @@ public class AddressBookGUI extends JFrame {
             }
 
             if (isEdit) {
-                // Update contact in ArrayList and Table
                 contact.setName(name);
                 contact.setPhone(phone);
                 contact.setEmail(email);
@@ -129,7 +128,6 @@ public class AddressBookGUI extends JFrame {
                 tableModel.setValueAt(phone, rowIndex, 1);
                 tableModel.setValueAt(email, rowIndex, 2);
             } else {
-                // Create new contact, add to ArrayList and Table
                 Contact newContact = new Contact(name, phone, email);
                 contactList.add(newContact);
                 tableModel.addRow(new Object[]{name, phone, email});
@@ -137,8 +135,8 @@ public class AddressBookGUI extends JFrame {
         }
     }
 
+    // Main Method with SwingUtilities.invokeLater
     public static void main(String[] args) {
-        // Run on Event Dispatch Thread (EDT)
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
